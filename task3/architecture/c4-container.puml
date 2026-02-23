@@ -1,0 +1,113 @@
+@startuml C4_Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Целевая архитектура "Будущее 2.0" - Container Diagram
+
+Person(doctor, "Врач", "Медицинский персонал")
+Person(patient, "Пациент", "Пользователь услуг")
+Person(analyst, "Аналитик", "Бизнес-аналитик")
+
+System_Boundary(medical, "Медицинская платформа") {
+    Container(medical_web, "Web Portal", "React, TypeScript", "Веб-интерфейс для врачей и операторов")
+    Container(medical_mobile, "Mobile App", "React Native", "Мобильное приложение для пациентов")
+    Container(medical_api, "Medical API Gateway", "Kong/Apigee", "API Gateway для медицинских сервисов")
+    Container(patient_service, "Patient Service", "Go", "Управление данными пациентов")
+    Container(appointment_service, "Appointment Service", "Go", "Управление записями на прием")
+    Container(emr_service, "EMR Service", "Java", "Электронные медицинские карты")
+    Container(medical_db, "Medical DB", "PostgreSQL", "Медицинские данные (без ПДн)")
+    Container(medical_storage, "Medical Storage", "S3/Object Storage", "Медицинские снимки и документы")
+}
+
+System_Boundary(fintech, "Финтех платформа") {
+    Container(fintech_web, "Banking Portal", "Angular", "Веб-интерфейс банка")
+    Container(fintech_api, "Fintech API Gateway", "Kong", "API Gateway для финансовых сервисов")
+    Container(payment_service, "Payment Service", "Java", "Обработка платежей")
+    Container(loan_service, "Loan Service", "Java", "Управление кредитами")
+    Container(account_service, "Account Service", "Go", "Управление счетами")
+    Container(fintech_db, "Fintech DB", "PostgreSQL", "Финансовые данные")
+}
+
+System_Boundary(ai, "AI платформа") {
+    Container(ai_api, "AI API Gateway", "FastAPI", "API Gateway для AI сервисов")
+    Container(diagnosis_service, "Diagnosis Service", "Python", "AI диагностика")
+    Container(image_analysis, "Image Analysis", "Python/TensorFlow", "Анализ медицинских снимков")
+    Container(ml_models, "ML Models Storage", "MLflow", "Хранилище ML моделей")
+    Container(ai_db, "AI DB", "PostgreSQL", "Метаданные AI анализов")
+}
+
+System_Boundary(data, "Платформа данных") {
+    Container(data_portal, "Data Portal", "React", "Портал самообслуживания")
+    Container(data_api, "Data API", "GraphQL", "API для доступа к данным")
+    Container(data_lake, "Data Lake", "S3/ADLS", "Озеро данных")
+    Container(data_warehouse, "Data Warehouse", "Snowflake/BigQuery", "Хранилище данных")
+    Container(streaming_engine, "Streaming Engine", "Apache Flink", "Потоковая обработка")
+    Container(olap_engine, "OLAP Engine", "ClickHouse", "Аналитическая БД")
+    Container(bi_tool, "BI Tool", "Tableau/PowerBI", "Инструмент визуализации")
+}
+
+System_Boundary(integration, "Событийная шина") {
+    Container(event_broker, "Event Broker", "Apache Kafka", "Брокер событий")
+    Container(schema_registry, "Schema Registry", "Confluent", "Реестр схем событий")
+    Container(stream_processor, "Stream Processor", "Kafka Streams", "Обработка потоков")
+    Container(dlq, "Dead Letter Queue", "Kafka", "Очередь необработанных событий")
+}
+
+System_Boundary(platform, "Платформенные сервисы") {
+    Container(auth_service, "Auth Service", "Keycloak", "Аутентификация и авторизация")
+    Container(notification_service, "Notification Service", "Go", "Уведомления (email, SMS, push)")
+    Container(audit_service, "Audit Service", "Go", "Аудит действий пользователей")
+    Container(monitoring, "Monitoring", "Prometheus/Grafana", "Мониторинг и алертинг")
+}
+
+' Relationships - Medical
+Rel(doctor, medical_web, "Использует", "HTTPS")
+Rel(patient, medical_mobile, "Использует", "HTTPS")
+Rel(medical_web, medical_api, "Вызывает", "HTTPS/REST")
+Rel(medical_mobile, medical_api, "Вызывает", "HTTPS/REST")
+Rel(medical_api, patient_service, "Маршрутизирует", "gRPC")
+Rel(medical_api, appointment_service, "Маршрутизирует", "gRPC")
+Rel(medical_api, emr_service, "Маршрутизирует", "gRPC")
+Rel(patient_service, medical_db, "Читает/пишет", "SQL")
+Rel(emr_service, medical_storage, "Сохраняет файлы", "S3 API")
+
+' Relationships - Fintech
+Rel(patient, fintech_web, "Использует", "HTTPS")
+Rel(fintech_web, fintech_api, "Вызывает", "HTTPS/REST")
+Rel(fintech_api, payment_service, "Маршрутизирует", "gRPC")
+Rel(fintech_api, loan_service, "Маршрутизирует", "gRPC")
+Rel(payment_service, fintech_db, "Читает/пишет", "SQL")
+
+' Relationships - AI
+Rel(doctor, ai_api, "Запрашивает анализ", "HTTPS/REST")
+Rel(ai_api, diagnosis_service, "Маршрутизирует", "gRPC")
+Rel(ai_api, image_analysis, "Маршрутизирует", "gRPC")
+Rel(diagnosis_service, ml_models, "Загружает модели", "HTTPS")
+Rel(image_analysis, medical_storage, "Читает снимки", "S3 API")
+
+' Relationships - Data Platform
+Rel(analyst, data_portal, "Строит отчеты", "HTTPS")
+Rel(data_portal, data_api, "Запрашивает данные", "GraphQL")
+Rel(data_api, olap_engine, "Читает", "SQL")
+Rel(data_api, data_warehouse, "Читает", "SQL")
+Rel(streaming_engine, data_lake, "Пишет", "S3 API")
+Rel(streaming_engine, olap_engine, "Пишет", "ClickHouse Protocol")
+Rel(bi_tool, data_warehouse, "Читает", "SQL")
+
+' Relationships - Event Bus
+Rel(patient_service, event_broker, "Публикует события", "Kafka Protocol")
+Rel(appointment_service, event_broker, "Публикует события", "Kafka Protocol")
+Rel(payment_service, event_broker, "Публикует события", "Kafka Protocol")
+Rel(diagnosis_service, event_broker, "Публикует события", "Kafka Protocol")
+Rel(event_broker, stream_processor, "Потоковая обработка", "Kafka Protocol")
+Rel(stream_processor, streaming_engine, "Передает события", "Kafka Protocol")
+Rel(event_broker, schema_registry, "Валидирует схемы", "HTTPS")
+
+' Relationships - Platform Services
+Rel(medical_api, auth_service, "Проверяет токены", "OAuth 2.0")
+Rel(fintech_api, auth_service, "Проверяет токены", "OAuth 2.0")
+Rel(patient_service, notification_service, "Отправляет уведомления", "gRPC")
+Rel(payment_service, audit_service, "Логирует действия", "gRPC")
+
+@enduml

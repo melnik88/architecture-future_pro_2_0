@@ -1,0 +1,46 @@
+@startuml C4_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Целевая архитектура "Будущее 2.0" - Context Diagram (горизонт 3 года)
+
+Person(patient, "Пациент", "Пользователь медицинских услуг")
+Person(doctor, "Врач", "Медицинский персонал")
+Person(operator, "Оператор клиники", "Административный персонал")
+Person(analyst, "Бизнес-аналитик", "Аналитик данных")
+Person(manager, "Менеджер", "Руководитель подразделения")
+
+System_Boundary(future_pro, "Экосистема Будущее 2.0") {
+    System(medical_platform, "Медицинская платформа", "Управление пациентами, записями, медицинскими данными")
+    System(fintech_platform, "Финтех платформа", "Банковские услуги, кредиты, платежи")
+    System(ai_platform, "AI платформа", "Диагностика, анализ снимков, рекомендации")
+    System(data_platform, "Платформа данных", "Витрина данных, аналитика, отчетность")
+    System(event_bus, "Событийная шина", "Асинхронная интеграция доменов")
+}
+
+System_Ext(pharmacy, "Фармацевтические компании", "Поставщики лекарств")
+System_Ext(equipment, "Производители оборудования", "Медицинское оборудование")
+System_Ext(regulators, "Регуляторы", "ЦБ, Минздрав, ФНС")
+System_Ext(external_labs, "Внешние лаборатории", "Партнерские лаборатории")
+
+Rel(patient, medical_platform, "Записывается на прием, получает услуги")
+Rel(patient, fintech_platform, "Оплачивает услуги, берет кредиты")
+Rel(doctor, medical_platform, "Ведет прием, назначает лечение")
+Rel(doctor, ai_platform, "Использует AI для диагностики")
+Rel(operator, medical_platform, "Регистрирует пациентов")
+Rel(analyst, data_platform, "Строит отчеты, анализирует данные")
+Rel(manager, data_platform, "Просматривает дашборды")
+
+Rel(medical_platform, event_bus, "Публикует события", "Events")
+Rel(fintech_platform, event_bus, "Публикует события", "Events")
+Rel(ai_platform, event_bus, "Публикует события", "Events")
+Rel(event_bus, data_platform, "Потоковая передача данных", "Event Stream")
+
+Rel(medical_platform, pharmacy, "Заказывает лекарства", "API")
+Rel(medical_platform, equipment, "Интегрируется с оборудованием", "HL7/FHIR")
+Rel(medical_platform, external_labs, "Отправляет анализы", "API")
+Rel(fintech_platform, regulators, "Отчетность", "HTTPS")
+Rel(medical_platform, regulators, "Отчетность", "HTTPS")
+
+@enduml
