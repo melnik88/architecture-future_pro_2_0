@@ -1,0 +1,24 @@
+# Пример конфигурации для развертывания
+# Скопируйте этот файл в terraform.tfvars и заполните реальными значениями
+
+vm_name   = "cicd-vm-01"
+cores     = 2
+memory    = 4
+disk_size = 50
+disk_type = "network-hdd"
+
+# ВАЖНО: Замените на реальные значения
+subnet_id = "e9b12345678901234"  # ID вашей подсети в Yandex Cloud
+ssh_key   = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... user@example.com"
+
+zone         = "ru-central1-a"
+image_family = "ubuntu-2004-lts"
+platform_id  = "standard-v2"
+preemptible  = false
+nat          = true
+
+labels = {
+  environment = "production"
+  managed_by  = "terraform"
+  deployed_by = "ci-cd"
+}
